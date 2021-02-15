@@ -1,0 +1,16 @@
+---
+- name: create file and append contents at remote server
+  hosts: servers
+  gather_facts: true
+  tasks:
+    - name: create a empty file at remote server
+      file:
+        state: touch
+        group: wangwenjun
+        path: /home/wangwenjun/ansible_playbook.txt
+    - name: append lines of content
+      shell: |
+        echo 'Hello
+        Ansible
+        Come from Ansible' >> /home/wangwenjun/ansible_playbook.txt
+

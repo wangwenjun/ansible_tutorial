@@ -1,0 +1,1 @@
+ansible servers -m ping

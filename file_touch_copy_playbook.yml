@@ -1,0 +1,18 @@
+---
+- name: touch a file then copy to servers
+  gather_facts: true
+  hosts: local
+  tasks:
+    - name: touch the file at local
+      file:
+        path: /home/wangwenjun/x.txt
+        state: touch
+- name: copy
+  gather_facts: false
+  hosts: local
+  tasks:
+    - name: copy the file to servers
+      copy:
+        src: /home/wangwenjun/x.txt
+        dest: /home/wangwenjun/training/ansible/x.txt
+

@@ -1,0 +1,11 @@
+---
+- name: substitue the nginx configuration
+  hosts: nginx
+  gather_facts: false
+  tasks:
+    - name: substitue
+      template:
+        src: /home/wangwenjun/training/ansible/nginx_conf.j2
+        dest: /home/wangwenjun/nginx.conf
+      with_items:
+        - "{{ groups['nginx'] }}"

@@ -1,0 +1,76 @@
+---
+- name: deploy the simple_application to apps server
+  hosts: apps
+  vars:
+    group_id: com.wangwenjun.simple.application
+    artifact_id: simple_application
+    app_path: /home/wangwenjun/apps/simple_application
+    timestamp: "{{ansible_date_time.iso8601_basic}}"
+    dest_location: "{{app_path}}/{{artifact_id}}-{{version}}-{{timestamp}}"
+  gather_facts: true
+  tasks:
+    - name: create the application deploy path
+      file: 
+        path: "{{app_path}}"
+        state: directory
+        group: wangwenjun
+        recurse: yes
+      register: init_var
+    - debug:
+        msg: 
+          - "The {{app_path}} already exists or create done."
+          - "Details: {{init_var}}"
+    
+    - name: download simple_application artifact package
+      maven_artifact:
+        group_id: "{{group_id}}"
+        artifact_id: "{{artifact_id}}"
+        version: "{{version}}"
+        repository_url: 'http://192.168.88.109:8081/repository/maven-snapshots/'
+        keep_name: yes
+        dest: "{{app_path}}"
+        username: admin
+        password: admin123
+        extension: 'tar.gz'
+      register: download_var
+    - debug:
+        msg:
+          - "The {{group_id}}:{{artifact_id}}:{{version}} download done."
+          - "Details: {{download_var}}"
+
+    - name: create history version directory
+      file:
+        path: "{{dest_location}}"
+        state: directory
+        group: wangwenjun
+      when: download_var.changed
+      register: create_his_var
+    - debug:
+        msg: "The {{dest_location}} directory create done."
+
+    - name: unarchive the package
+      unarchive:
+        src: "{{app_path}}/{{artifact_id}}-{{version}}.tar.gz"
+        dest: "{{dest_location}}"
+        remote_src: true
+        list_files: yes
+      when: create_his_var.changed
+      register: unarchive_var
+    - debug:
+        msg:
+          - "The {{app_path}}/{{artifact_id}}-{{version}}.tar.gz unarchive done."
+          - "Details: {{unarchive_var}}"
+
+    - name: create the soft link
+      file:
+        src: "{{dest_location}}"
+        dest: "{{app_path}}/current"
+        state: link
+      when: unarchive_var.changed
+      notify: Start Application
+
+  handlers:
+    - name: Start Application
+      shell:
+        cmd: sh startup.sh   
+        chdir: "{{app_path}}/current/bin"

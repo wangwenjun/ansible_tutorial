@@ -1,0 +1,2 @@
+ansible localhost -m file -a "path=/home/wangwenjun/training/ansible/a.txt state=touch"
+ansible servers -m copy -a "src=/home/wangwenjun/training/ansible/a.txt dest=/home/wangwenjun/a2.txt"
